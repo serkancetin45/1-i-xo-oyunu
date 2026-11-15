@@ -1,0 +1,1025 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>1-İ Sınıfı Akıllı Tahta Oyunu</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@700;900&display=swap');
+
+        :root {
+            --bg-color: #080812;
+            --neon-cyan: #00f3ff;
+            --neon-pink: #ff007f;
+            --neon-yellow: #f3e600;
+            --neon-green: #00ff66;
+            --neon-purple: #b000ff;
+            --panel-bg: rgba(16, 16, 35, 0.85);
+        }
+
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            margin: 0;
+            padding: 0;
+            font-family: 'Nunito', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(0, 243, 255, 0.1) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(255, 0, 127, 0.1) 0%, transparent 40%);
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow-x: hidden;
+            padding: 10px;
+            /* Akıllı tahtalar için otomatik %90 ölçeklendirme */
+            zoom: 0.9;
+        }
+
+        h1, h2, h3, .neon-title {
+            font-family: 'Fredoka One', cursive;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .main-title {
+            font-size: 2.6rem;
+            color: #fff;
+            text-align: center;
+            margin-bottom: 15px;
+            text-shadow: 0 0 10px var(--neon-cyan), 0 0 20px var(--neon-cyan), 0 0 40px var(--neon-cyan);
+            animation: pulseTitle 2s infinite alternate;
+        }
+
+        @keyframes pulseTitle {
+            0% { text-shadow: 0 0 10px var(--neon-cyan), 0 0 20px var(--neon-cyan); }
+            100% { text-shadow: 0 0 20px var(--neon-cyan), 0 0 40px var(--neon-cyan), 0 0 60px var(--neon-pink); }
+        }
+
+        .screen {
+            display: none;
+            width: 100%;
+            max-width: 880px;
+            background: var(--panel-bg);
+            border: 3px solid var(--neon-cyan);
+            box-shadow: 0 0 25px rgba(0, 243, 255, 0.4), inset 0 0 25px rgba(0, 243, 255, 0.2);
+            border-radius: 25px;
+            padding: 25px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .screen.active {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .btn {
+            background: transparent;
+            font-family: 'Fredoka One', cursive;
+            font-size: 1.3rem;
+            padding: 12px 28px;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            outline: none;
+        }
+
+        .btn-cyan {
+            color: var(--neon-cyan);
+            border: 3px solid var(--neon-cyan);
+            box-shadow: 0 0 15px rgba(0, 243, 255, 0.3), inset 0 0 15px rgba(0, 243, 255, 0.1);
+        }
+        .btn-cyan:hover {
+            background: var(--neon-cyan);
+            color: #000;
+            box-shadow: 0 0 30px var(--neon-cyan);
+            transform: scale(1.05);
+        }
+
+        .btn-pink {
+            color: var(--neon-pink);
+            border: 3px solid var(--neon-pink);
+            box-shadow: 0 0 15px rgba(255, 0, 127, 0.3), inset 0 0 15px rgba(255, 0, 127, 0.1);
+        }
+        .btn-pink:hover {
+            background: var(--neon-pink);
+            color: #fff;
+            box-shadow: 0 0 30px var(--neon-pink);
+            transform: scale(1.05);
+        }
+
+        .btn-yellow {
+            color: var(--neon-yellow);
+            border: 3px solid var(--neon-yellow);
+            box-shadow: 0 0 15px rgba(243, 230, 0, 0.3), inset 0 0 15px rgba(243, 230, 0, 0.1);
+        }
+        .btn-yellow:hover {
+            background: var(--neon-yellow);
+            color: #000;
+            box-shadow: 0 0 30px var(--neon-yellow);
+            transform: scale(1.05);
+        }
+
+        .btn-green {
+            color: var(--neon-green);
+            border: 3px solid var(--neon-green);
+            box-shadow: 0 0 15px rgba(0, 255, 102, 0.3), inset 0 0 15px rgba(0, 255, 102, 0.1);
+        }
+        .btn-green:hover {
+            background: var(--neon-green);
+            color: #000;
+            box-shadow: 0 0 30px var(--neon-green);
+            transform: scale(1.05);
+        }
+
+        .settings-group {
+            margin: 12px 0;
+            font-size: 1.1rem;
+        }
+
+        .options-row {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 8px;
+        }
+
+        .opt-btn {
+            background: rgba(255,255,255,0.05);
+            border: 2px solid #555;
+            color: #bbb;
+            padding: 8px 18px;
+            font-size: 1.1rem;
+            border-radius: 12px;
+            cursor: pointer;
+            font-family: 'Fredoka One', cursive;
+            transition: 0.2s;
+        }
+
+        .opt-btn.selected {
+            border-color: var(--neon-green);
+            color: var(--neon-green);
+            background: rgba(0, 255, 102, 0.15);
+            box-shadow: 0 0 15px rgba(0, 255, 102, 0.3);
+        }
+
+        .student-management-box {
+            width: 100%;
+            max-height: 190px;
+            overflow-y: auto;
+            background: rgba(0,0,0,0.4);
+            border: 2px solid rgba(255,255,255,0.15);
+            border-radius: 15px;
+            padding: 12px;
+            margin: 10px 0;
+            text-align: left;
+        }
+
+        .student-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 5px 8px;
+            margin-bottom: 4px;
+            background: rgba(255,255,255,0.04);
+            border-radius: 6px;
+            font-size: 0.95rem;
+        }
+
+        .del-student-btn {
+            background: #ff4444;
+            color: #fff;
+            border: none;
+            padding: 2px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: 'Fredoka One';
+        }
+
+        .add-input-group {
+            display: flex;
+            gap: 10px;
+            width: 100%;
+            margin-top: 8px;
+        }
+
+        .add-input-group input {
+            flex: 1;
+            background: rgba(0,0,0,0.6);
+            border: 2px solid var(--neon-cyan);
+            border-radius: 10px;
+            padding: 8px 12px;
+            color: #fff;
+            font-size: 1rem;
+            outline: none;
+        }
+
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+            align-items: center;
+            padding: 0 5px;
+        }
+
+        .player-card {
+            background: rgba(0,0,0,0.4);
+            border: 2px solid;
+            padding: 8px 15px;
+            border-radius: 12px;
+            min-width: 160px;
+        }
+
+        .player1-card { border-color: var(--neon-cyan); box-shadow: 0 0 10px rgba(0,243,255,0.3); }
+        .player2-card { border-color: var(--neon-pink); box-shadow: 0 0 10px rgba(255,0,127,0.3); }
+
+        .board-wrapper {
+            position: relative;
+            margin: 10px auto;
+        }
+
+        .board {
+            display: grid;
+            grid-template-columns: repeat(3, 115px);
+            grid-template-rows: repeat(3, 115px);
+            gap: 12px;
+        }
+
+        /* Kazanan Üçleme Çizgisi */
+        #winning-line {
+            position: absolute;
+            background-color: var(--neon-yellow);
+            box-shadow: 0 0 15px var(--neon-yellow), 0 0 30px var(--neon-yellow);
+            border-radius: 5px;
+            pointer-events: none;
+            display: none;
+            z-index: 10;
+            transition: all 0.3s ease;
+        }
+
+        .cell {
+            background: rgba(10, 10, 30, 0.8);
+            border: 3px solid var(--neon-purple);
+            border-radius: 18px;
+            font-size: 3.2rem;
+            font-family: 'Fredoka One', cursive;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 0 15px rgba(176, 0, 255, 0.3);
+            transition: all 0.2s ease;
+        }
+
+        .cell:hover {
+            border-color: var(--neon-cyan);
+            box-shadow: 0 0 25px var(--neon-cyan);
+            transform: scale(1.03);
+        }
+
+        .cell.x { color: var(--neon-cyan); text-shadow: 0 0 20px var(--neon-cyan); }
+        .cell.o { color: var(--neon-pink); text-shadow: 0 0 20px var(--neon-pink); }
+
+        .tournament-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            width: 100%;
+            margin-top: 10px;
+            text-align: left;
+        }
+
+        .t-box {
+            background: rgba(0,0,0,0.5);
+            border: 2px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 12px;
+            max-height: 180px;
+            overflow-y: auto;
+        }
+
+        .t-box h3 {
+            color: var(--neon-yellow);
+            margin-bottom: 8px;
+            font-size: 1rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 4px;
+        }
+
+        .t-list {
+            list-style: none;
+            font-size: 0.9rem;
+        }
+
+        .t-list li {
+            padding: 4px 6px;
+            margin-bottom: 3px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        canvas#confetti-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 999;
+        }
+
+        .announcement {
+            font-size: 1.4rem;
+            color: var(--neon-yellow);
+            margin: 8px 0;
+            text-shadow: 0 0 10px var(--neon-yellow);
+        }
+    </style>
+</head>
+<body>
+
+    <h1 class="main-title">1-İ Sınıfı Akıllı Tahta Oyunu</h1>
+
+    <canvas id="confetti-canvas"></canvas>
+
+    <!-- ANA MENÜ -->
+    <div id="menu-screen" class="screen active">
+        <h2 style="font-size: 1.8rem; color: var(--neon-cyan); margin-bottom: 12px;">Oyun Modunu Seç</h2>
+        <button class="btn btn-cyan" onclick="openModeSettings('tournament')">Sınıf Turnuvası</button>
+        <button class="btn btn-pink" onclick="startFreeGame()">İki Kişilik Serbest Oyun</button>
+        <button class="btn btn-yellow" onclick="startVsPcGame()">Bilgisayara Karşı</button>
+        <button class="btn btn-green" onclick="openStudentManager()">Öğrenci Listesi / Ekle (<span id="student-count-badge">24</span>)</button>
+    </div>
+
+    <!-- ÖĞRENCİ YÖNETİM EKRANI -->
+    <div id="student-manager-screen" class="screen">
+        <h2 style="font-size: 1.6rem; color: var(--neon-green); margin-bottom: 8px;">Öğrenci Listesi Yönetimi</h2>
+        <p style="font-size: 0.9rem; color: #ccc;">Buradan yeni öğrenciler ekleyebilir veya mevcut öğrencileri silebilirsiniz.</p>
+        
+        <div class="student-management-box" id="student-list-container"></div>
+
+        <div class="add-input-group">
+            <input type="text" id="new-student-input" placeholder="Yeni Öğrenci Adı Soyadı...">
+            <button class="btn btn-green" style="margin:0; padding: 8px 18px; font-size: 1rem;" onclick="addNewStudent()">Ekle</button>
+        </div>
+
+        <div style="margin-top: 15px;">
+            <button class="btn btn-cyan" onclick="goToMenu()">Ana Menüye Dön</button>
+        </div>
+    </div>
+
+    <!-- TURNUVA AYAR EKRANI -->
+    <div id="tournament-settings-screen" class="screen">
+        <h2 style="font-size: 1.6rem; color: var(--neon-yellow); margin-bottom: 12px;">Turnuva Ayarları</h2>
+        
+        <div class="settings-group">
+            <p>Maç Başına Tur Sayısı:</p>
+            <div class="options-row" id="rounds-options">
+                <button class="opt-btn selected" onclick="setRounds(1)">1 Tur</button>
+                <button class="opt-btn" onclick="setRounds(2)">2 Tur</button>
+                <button class="opt-btn" onclick="setRounds(3)">3 Tur</button>
+            </div>
+        </div>
+        <p style="margin-top: 8px; color: var(--neon-cyan);">Aktif Öğrenci Sayısı: <span id="active-student-count">24</span></p>
+
+        <div style="margin-top: 15px;">
+            <button class="btn btn-cyan" onclick="startTournamentSession()">Turnuvayı Başlat!</button>
+            <button class="btn btn-pink" onclick="goToMenu()">Ana Menü</button>
+        </div>
+    </div>
+
+    <!-- OYUN EKRANI -->
+    <div id="game-screen" class="screen">
+        <div class="game-header">
+            <div class="player-card player1-card" id="p1-display">Oyuncu 1 (X)</div>
+            <div id="round-info" style="font-family: 'Fredoka One'; color: var(--neon-yellow);">Tur: 1 / 3</div>
+            <div class="player-card player2-card" id="p2-display">Oyuncu 2 (O)</div>
+        </div>
+
+        <div class="announcement" id="turn-announcement">Sıra: Oyuncu 1</div>
+
+        <div class="board-wrapper">
+            <div id="winning-line"></div>
+            <div class="board" id="board">
+                <div class="cell" onclick="makeMove(0)"></div>
+                <div class="cell" onclick="makeMove(1)"></div>
+                <div class="cell" onclick="makeMove(2)"></div>
+                <div class="cell" onclick="makeMove(3)"></div>
+                <div class="cell" onclick="makeMove(4)"></div>
+                <div class="cell" onclick="makeMove(5)"></div>
+                <div class="cell" onclick="makeMove(6)"></div>
+                <div class="cell" onclick="makeMove(7)"></div>
+                <div class="cell" onclick="makeMove(8)"></div>
+            </div>
+        </div>
+
+        <button class="btn btn-pink" style="font-size: 0.95rem; padding: 6px 16px; margin-top: 10px;" onclick="quitToMenu()">Oyundan Çık</button>
+    </div>
+
+    <!-- TUR / MAÇ SONUCU EKRANI -->
+    <div id="result-screen" class="screen">
+        <h2 id="result-title" style="font-size: 2rem; color: var(--neon-green); margin-bottom: 8px;">MAÇ BİTTİ!</h2>
+        <p id="result-desc" class="announcement" style="font-size: 1.2rem;"></p>
+        
+        <div class="tournament-container" id="tournament-status-panel" style="display: none;">
+            <div class="t-box">
+                <h3>Tur Kazananları (Devam Edenler)</h3>
+                <ul id="t-winners-list" class="t-list"></ul>
+            </div>
+            <div class="t-box">
+                <h3>Bu Turda Elenenler</h3>
+                <ul id="t-losers-list" class="t-list"></ul>
+            </div>
+        </div>
+
+        <div id="non-tournament-actions" style="margin-top: 12px; display: none;">
+            <button class="btn btn-cyan" onclick="restartCurrentGame()">Tekrar Oyna</button>
+            <button class="btn btn-pink" onclick="goToMenu()">Ana Menü</button>
+        </div>
+
+        <div id="tournament-actions" style="margin-top: 12px; display: none;">
+            <button class="btn btn-cyan" id="next-match-btn" onclick="nextTournamentStep()">Sıradaki Eşleşme</button>
+            <button class="btn btn-pink" onclick="goToMenu()">Ana Menü</button>
+        </div>
+    </div>
+
+    <script>
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playSound(type) {
+            if (audioCtx.state === 'suspended') { audioCtx.resume(); }
+            const now = audioCtx.currentTime;
+
+            if (type === 'click') {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain); gain.connect(audioCtx.destination);
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(400, now);
+                osc.frequency.exponentialRampToValueAtTime(800, now + 0.08);
+                gain.gain.setValueAtTime(0.15, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.08);
+                osc.start(now);
+                osc.stop(now + 0.08);
+            } else if (type === 'win') {
+                // Zafer jingle efekti
+                const freqs = [330, 392, 523, 659, 784];
+                freqs.forEach((f, i) => {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.connect(gain); gain.connect(audioCtx.destination);
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(f, now + i * 0.1);
+                    gain.gain.setValueAtTime(0.2, now + i * 0.1);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + i * 0.1 + 0.25);
+                    osc.start(now + i * 0.1);
+                    osc.stop(now + i * 0.1 + 0.25);
+                });
+            } else if (type === 'champion') {
+                const notes = [261.63, 329.63, 392.00, 523.25, 659.25, 783.99, 1046.50];
+                notes.forEach((freq, idx) => {
+                    const o = audioCtx.createOscillator();
+                    const g = audioCtx.createGain();
+                    o.connect(g); g.connect(audioCtx.destination);
+                    o.frequency.setValueAtTime(freq, now + idx * 0.12);
+                    g.gain.setValueAtTime(0.2, now + idx * 0.12);
+                    g.gain.exponentialRampToValueAtTime(0.01, now + idx * 0.12 + 0.2);
+                    o.start(now + idx * 0.12);
+                    o.stop(now + idx * 0.12 + 0.2);
+                });
+            }
+        }
+
+        let studentsList = [
+            "ALPTUĞ EROĞLU", "AMİNE SAHRA İPEK", "ARDA SAMET CANSEVER", "AYŞE TOPAÇ",
+            "AZRA YILMAZ", "ELİF FATMA GÜREL", "ERTUĞRUL KÖMÜR", "EYMEN ALTUN",
+            "HATİÇE ÖZÇELİK", "ESLEM İKRA BİLMEN", "HAVVANUR GÜLSEN", "KEREM GÜZEL",
+            "KEVSER BUDAK", "MİHRA ESLEM BABAÇ", "MUHAMMED ALİ ŞAHİN", "OSMAN AYAZ AKKUŞ",
+            "ŞEHMUZ AÇIKGÖZ", "VESİLE AKBULUT", "YAMAÇ BAYAR", "ZEYNEP ŞEN",
+            "ALİ AĞKUŞ", "HUDA ELARAFİ", "FEREH MUSTAFA", "MAHMUD HALİL"
+        ];
+
+        let gameMode = 'free'; 
+        let selectedRounds = 1;
+        let activePlayers = [];
+        
+        let p1Name = "Oyuncu 1";
+        let p2Name = "Oyuncu 2";
+        let p1Score = 0;
+        let p2Score = 0;
+        let currentRoundInMatch = 1;
+
+        let board = ["","","","","","","","",""];
+        let currentPlayer = 'X';
+        let gameActive = true;
+
+        let tournamentRoundNumber = 1;
+        let currentMatchPairs = [];
+        let currentMatchIndex = 0;
+        let roundWinners = [];
+        let roundLosers = [];
+        let allEliminated = [];
+
+        function updateStudentCounts() {
+            document.getElementById('student-count-badge').innerText = studentsList.length;
+            document.getElementById('active-student-count').innerText = studentsList.length;
+        }
+
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        function goToMenu() {
+            stopConfetti();
+            updateStudentCounts();
+            showScreen('menu-screen');
+        }
+
+        function openStudentManager() {
+            renderStudentManagerList();
+            showScreen('student-manager-screen');
+        }
+
+        function renderStudentManagerList() {
+            const container = document.getElementById('student-list-container');
+            container.innerHTML = "";
+            studentsList.forEach((name, idx) => {
+                let div = document.createElement('div');
+                div.className = 'student-item';
+                div.innerHTML = `<span>${idx + 1}. ${name}</span> <button class="del-student-btn" onclick="removeStudent(${idx})">Sil</button>`;
+                container.appendChild(div);
+            });
+        }
+
+        function addNewStudent() {
+            const input = document.getElementById('new-student-input');
+            let name = input.value.trim();
+            if (name !== "") {
+                studentsList.push(name.toUpperCase());
+                input.value = "";
+                renderStudentManagerList();
+                updateStudentCounts();
+            }
+        }
+
+        function removeStudent(index) {
+            if (studentsList.length > 2) {
+                studentsList.splice(index, 1);
+                renderStudentManagerList();
+                updateStudentCounts();
+            } else {
+                alert("Turnuva için en az 2 öğrenci olmalıdır!");
+            }
+        }
+
+        function openModeSettings(mode) {
+            gameMode = mode;
+            if (mode === 'tournament') {
+                updateStudentCounts();
+                showScreen('tournament-settings-screen');
+            }
+        }
+
+        function setRounds(num) {
+            selectedRounds = num;
+            document.querySelectorAll('#rounds-options .opt-btn').forEach(btn => btn.classList.remove('selected'));
+            event.target.classList.add('selected');
+        }
+
+        function startFreeGame() {
+            gameMode = 'free';
+            p1Name = "Oyuncu 1";
+            p2Name = "Oyuncu 2";
+            selectedRounds = 1;
+            initNewMatch(p1Name, p2Name);
+        }
+
+        function startVsPcGame() {
+            gameMode = 'vspc';
+            p1Name = "Öğrenci";
+            p2Name = "Akıllı Tahta (PC)";
+            selectedRounds = 1;
+            initNewMatch(p1Name, p2Name);
+        }
+
+        function restartCurrentGame() {
+            stopConfetti();
+            initNewMatch(p1Name, p2Name);
+        }
+
+        function startTournamentSession() {
+            gameMode = 'tournament';
+            activePlayers = [...studentsList];
+            shuffleArray(activePlayers);
+            tournamentRoundNumber = 1;
+            roundWinners = [];
+            roundLosers = [];
+            allEliminated = [];
+            
+            buildCurrentMatchPairs();
+            currentMatchIndex = 0;
+            startNextTournamentMatch();
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function buildCurrentMatchPairs() {
+            currentMatchPairs = [];
+            for (let i = 0; i < activePlayers.length; i += 2) {
+                if (i + 1 < activePlayers.length) {
+                    currentMatchPairs.push({ p1: activePlayers[i], p2: activePlayers[i+1] });
+                } else {
+                    roundWinners.push(activePlayers[i]);
+                    allEliminated.push({ name: activePlayers[i], note: "Tek kaldığı için doğrudan tur atladı" });
+                }
+            }
+        }
+
+        function startNextTournamentMatch() {
+            if (currentMatchIndex < currentMatchPairs.length) {
+                let match = currentMatchPairs[currentMatchIndex];
+                initNewMatch(match.p1, match.p2);
+            } else {
+                if (roundWinners.length === 1 && activePlayers.length === 2 && roundWinners[0] === activePlayers[0]) {
+                    declareChampion(roundWinners[0]);
+                } else if (roundWinners.length === 0) {
+                    declareChampion(activePlayers[0] || "1-İ Sınıfı Şampiyonu");
+                } else {
+                    tournamentRoundNumber++;
+                    activePlayers = [...roundWinners];
+                    roundWinners = [];
+                    roundLosers = [];
+                    shuffleArray(activePlayers);
+                    buildCurrentMatchPairs();
+                    currentMatchIndex = 0;
+                    startNextTournamentMatch();
+                }
+            }
+        }
+
+        function initNewMatch(name1, name2) {
+            p1Name = name1;
+            p2Name = name2;
+            p1Score = 0;
+            p2Score = 0;
+            currentRoundInMatch = 1;
+
+            document.getElementById('p1-display').innerText = `${p1Name} (X)`;
+            document.getElementById('p2-display').innerText = `${p2Name} (O)`;
+            
+            showScreen('game-screen');
+            resetBoardForRound();
+        }
+
+        function resetBoardForRound() {
+            board = ["","","","","","","","",""];
+            gameActive = true;
+            currentPlayer = 'X';
+            document.getElementById('round-info').innerText = `Tur: ${currentRoundInMatch} / ${selectedRounds}`;
+            document.getElementById('turn-announcement').innerText = `Sıra: ${p1Name} (X)`;
+            
+            // Çizgiyi gizle ve sıfırla
+            const line = document.getElementById('winning-line');
+            line.style.display = 'none';
+            line.style.width = '0px';
+            line.style.height = '0px';
+
+            const cells = document.querySelectorAll('.cell');
+            cells.forEach((cell, idx) => {
+                cell.innerText = "";
+                cell.className = "cell";
+            });
+        }
+
+        function makeMove(index) {
+            if (!gameActive || board[index] !== "") return;
+
+            board[index] = currentPlayer;
+            const cell = document.querySelectorAll('.cell')[index];
+            cell.innerText = currentPlayer;
+            cell.classList.add(currentPlayer.toLowerCase());
+            playSound('click');
+
+            let winResult = checkWinDetails(currentPlayer);
+            if (winResult) {
+                gameActive = false;
+                drawWinningLine(winResult);
+                handleRoundWin(currentPlayer);
+                return;
+            }
+
+            if (board.every(cell => cell !== "")) {
+                gameActive = false;
+                handleRoundDraw();
+                return;
+            }
+
+            currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+            let activeName = currentPlayer === 'X' ? p1Name : p2Name;
+            document.getElementById('turn-announcement').innerText = `Sıra: ${activeName} (${currentPlayer})`;
+
+            if (gameMode === 'vspc' && currentPlayer === 'O' && gameActive) {
+                setTimeout(makeComputerMove, 500);
+            }
+        }
+
+        function makeComputerMove() {
+            if (!gameActive) return;
+            let emptyCells = [];
+            board.forEach((val, idx) => { if (val === "") emptyCells.push(idx); });
+            if (emptyCells.length === 0) return;
+
+            let move = findBestAIMove('O');
+            if (move === null) move = findBestAIMove('X');
+            if (move === null) move = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+
+            makeMove(move);
+        }
+
+        function findBestAIMove(playerChar) {
+            const winConditions = [
+                [0,1,2], [3,4,5], [6,7,8],
+                [0,3,6], [1,4,7], [2,5,8],
+                [0,4,8], [2,4,6]
+            ];
+            for (let cond of winConditions) {
+                let [a, b, c] = cond;
+                let vals = [board[a], board[b], board[c]];
+                if (vals.filter(v => v === playerChar).length === 2 && vals.includes("")) {
+                    if (board[a] === "") return a;
+                    if (board[b] === "") return b;
+                    if (board[c] === "") return c;
+                }
+            }
+            return null;
+        }
+
+        function checkWinDetails(char) {
+            const wins = [
+                { type: 'row', index: 0, cells: [0,1,2] },
+                { type: 'row', index: 1, cells: [3,4,5] },
+                { type: 'row', index: 2, cells: [6,7,8] },
+                { type: 'col', index: 0, cells: [0,3,6] },
+                { type: 'col', index: 1, cells: [1,4,7] },
+                { type: 'col', index: 2, cells: [2,5,8] },
+                { type: 'diag', index: 1, cells: [0,4,8] },
+                { type: 'diag', index: 2, cells: [2,4,6] }
+            ];
+            for (let w of wins) {
+                if (w.cells.every(index => board[index] === char)) {
+                    return w;
+                }
+            }
+            return null;
+        }
+
+        function drawWinningLine(winData) {
+            const line = document.getElementById('winning-line');
+            line.style.display = 'block';
+
+            // Hücre boyutları ve gap hesaplamaları (cell = 115px, gap = 12px)
+            // Toplam tahta genişliği/yüksekliği: 3 * 115 + 2 * 12 = 369px
+            if (winData.type === 'row') {
+                let topPos = winData.index * 127 + 57; // Hücre ortası hizası
+                line.style.top = topPos + 'px';
+                line.style.left = '15px';
+                line.style.width = '339px';
+                line.style.height = '6px';
+            } else if (winData.type === 'col') {
+                let leftPos = winData.index * 127 + 57;
+                line.style.left = leftPos + 'px';
+                line.style.top = '15px';
+                line.style.width = '6px';
+                line.style.height = '339px';
+            } else if (winData.type === 'diag') {
+                line.style.top = '184px';
+                line.style.left = '15px';
+                line.style.width = '339px';
+                line.style.height = '6px';
+                if (winData.index === 1) {
+                    line.style.transform = 'rotate(45deg)';
+                } else {
+                    line.style.transform = 'rotate(-45deg)';
+                }
+            }
+        }
+
+        function handleRoundWin(winnerChar) {
+            playSound('win');
+            if (winnerChar === 'X') {
+                p1Score++;
+                document.getElementById('turn-announcement').innerText = `${p1Name} Bu Turu Kazandı!`;
+            } else {
+                p2Score++;
+                document.getElementById('turn-announcement').innerText = `${p2Name} Bu Turu Kazandı!`;
+            }
+
+            setTimeout(checkMatchEndOrNextRound, 1800);
+        }
+
+        function handleRoundDraw() {
+            document.getElementById('turn-announcement').innerText = `Bu Tur Berabere Bitti!`;
+            setTimeout(checkMatchEndOrNextRound, 1500);
+        }
+
+        function checkMatchEndOrNextRound() {
+            let neededToWin = Math.ceil(selectedRounds / 2);
+            if (p1Score >= neededToWin || p2Score >= neededToWin || currentRoundInMatch >= selectedRounds) {
+                finalizeMatch();
+            } else {
+                currentRoundInMatch++;
+                resetBoardForRound();
+            }
+        }
+
+        function finalizeMatch() {
+            let matchWinner = "";
+            let matchLoser = "";
+
+            if (p1Score > p2Score) {
+                matchWinner = p1Name;
+                matchLoser = p2Name;
+            } else if (p2Score > p1Score) {
+                matchWinner = p2Name;
+                matchLoser = p1Name;
+            } else {
+                matchWinner = p1Name;
+                matchLoser = p2Name;
+            }
+
+            showScreen('result-screen');
+            document.getElementById('result-title').innerText = "MAÇ SONUCU";
+            document.getElementById('result-desc').innerText = `Kazanan: ${matchWinner} (${p1Score} - ${p2Score})`;
+
+            const tPanel = document.getElementById('tournament-status-panel');
+            const nonTourActions = document.getElementById('non-tournament-actions');
+            const tourActions = document.getElementById('tournament-actions');
+
+            if (gameMode === 'tournament') {
+                tPanel.style.display = "grid";
+                nonTourActions.style.display = "none";
+                tourActions.style.display = "block";
+
+                roundWinners.push(matchWinner);
+                roundLosers.push(matchLoser);
+                allEliminated.push({ name: matchLoser, note: `${tournamentRoundNumber}. Turda Elendi` });
+
+                currentMatchIndex++;
+                updateTournamentListsUI();
+
+                if (currentMatchIndex >= currentMatchPairs.length && roundWinners.length === 1 && activePlayers.length <= 2) {
+                    declareChampion(roundWinners[0]);
+                }
+            } else {
+                tPanel.style.display = "none";
+                tourActions.style.display = "none";
+                nonTourActions.style.display = "block";
+                startConfetti();
+            }
+        }
+
+        function nextTournamentStep() {
+            if (currentMatchIndex < currentMatchPairs.length) {
+                let match = currentMatchPairs[currentMatchIndex];
+                initNewMatch(match.p1, match.p2);
+            } else {
+                if (roundWinners.length === 1) {
+                    declareChampion(roundWinners[0]);
+                } else {
+                    tournamentRoundNumber++;
+                    activePlayers = [...roundWinners];
+                    roundWinners = [];
+                    roundLosers = [];
+                    shuffleArray(activePlayers);
+                    buildCurrentMatchPairs();
+                    currentMatchIndex = 0;
+                    
+                    if (currentMatchPairs.length > 0) {
+                        let match = currentMatchPairs[currentMatchIndex];
+                        initNewMatch(match.p1, match.p2);
+                    } else if (activePlayers.length === 1) {
+                        declareChampion(activePlayers[0]);
+                    }
+                }
+            }
+        }
+
+        function declareChampion(championName) {
+            showScreen('result-screen');
+            playSound('champion');
+            startConfetti();
+
+            document.getElementById('result-title').innerText = "🏆 1-İ SINIFI ŞAMPİYONU 🏆";
+            document.getElementById('result-desc').innerHTML = `<span style="color: var(--neon-cyan); font-size: 1.8rem; font-family: 'Fredoka One';">${championName}</span>`;
+
+            document.getElementById('tournament-status-panel').style.display = "grid";
+            document.getElementById('tournament-actions').style.display = "none";
+            document.getElementById('non-tournament-actions').style.display = "block";
+            updateTournamentListsUI();
+        }
+
+        function updateTournamentListsUI() {
+            const winnersListUl = document.getElementById('t-winners-list');
+            const losersListUl = document.getElementById('t-losers-list');
+            
+            winnersListUl.innerHTML = "";
+            roundWinners.forEach(w => {
+                let li = document.createElement('li');
+                li.innerHTML = `<span>⭐ ${w}</span> <span style="color: var(--neon-green)">Devam Ediyor</span>`;
+                winnersListUl.appendChild(li);
+            });
+
+            losersListUl.innerHTML = "";
+            allEliminated.forEach(el => {
+                let li = document.createElement('li');
+                li.innerHTML = `<span>❌ ${el.name}</span> <span style="color: #ff5555">${el.note}</span>`;
+                losersListUl.appendChild(li);
+            });
+        }
+
+        function quitToMenu() {
+            if (confirm("Ana menüye dönmek istediğinize emin misiniz?")) {
+                goToMenu();
+            }
+        }
+
+        const canvas = document.getElementById('confetti-canvas');
+        const ctx = canvas.getContext('2d');
+        let confettiParticles = [];
+        let confettiAnimationId = null;
+
+        function startConfetti() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            confettiParticles = [];
+            for (let i = 0; i < 150; i++) {
+                confettiParticles.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height - canvas.height,
+                    r: Math.random() * 6 + 4,
+                    dx: Math.random() * 4 - 2,
+                    dy: Math.random() * 4 + 3,
+                    color: ['#00f3ff', '#ff007f', '#f3e600', '#00ff66', '#b000ff'][Math.floor(Math.random() * 5)]
+                });
+            }
+            loopConfetti();
+        }
+
+        function loopConfetti() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            confettiParticles.push(...[]);
+            confettiParticles.forEach(p => {
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+                ctx.fillStyle = p.color;
+                ctx.fill();
+                p.x += p.dx;
+                p.y += p.dy;
+                if (p.y > canvas.height) p.y = -10;
+            });
+            confettiAnimationId = requestAnimationFrame(loopConfetti);
+        }
+
+        function stopConfetti() {
+            if (confettiAnimationId) {
+                cancelAnimationFrame(confettiAnimationId);
+                confettiAnimationId = null;
+            }
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+
+        updateStudentCounts();
+    </script>
+</body>
+</html>
